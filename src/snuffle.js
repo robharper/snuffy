@@ -73,7 +73,7 @@ var defaultMetrics = [
     name: 'imageCount',
     onResource: function(response, memo) {
       memo = memo || 0;
-      if (response.contentType && response.contentType.indexOf('image/') === 0) {
+      if (response.stage === 'end' && response.contentType && response.contentType.indexOf('image/') === 0) {
         memo += 1;
       }
       return memo;
@@ -83,31 +83,54 @@ var defaultMetrics = [
     name: 'scriptCount',
     onResource: function(response, memo) {
       memo = memo || 0;
-      if (response.contentType && response.contentType.indexOf('/javascript') > 0) {
+      if (response.stage === 'end' && response.contentType && response.contentType.indexOf('/javascript') > 0) {
         memo += 1;
       }
       return memo;
+    }
+  },
+  {
+    name: 'doubleclick',
+    matcher: /doubleclick.(com|net)/,
+    onResource: function(response, memo) {
+      return memo || (response.stage === 'end' && response.url && !!this.matcher.exec(response.url));
     }
   }
 ];
 
 
 var evaluatePage = function(ph, url, metrics, onComplete) {
-  console.log('Evalulating: ' + url);
+  var resourceMetrics = _.filter(metrics, 'onResource');
+  var contextMetrics = _.filter(metrics, 'onContext');
+
+  console.log('Evaluating: ' + url);
+
   ph.createPage( function(page) {
     var pageMetrics = {};
 
+    // Network request response metrics collection
     page.set('onResourceReceived', function (response) {
       if (!response) return;
-      // Allow each metric that evaluates responses to handle
-      _.each(metrics, function(metric) {
-        if (metric.onResource) {
-          pageMetrics[metric.name] = metric.onResource(response, pageMetrics[metric.name]);
-        }
+      _.each(resourceMetrics, function(metric) {
+        pageMetrics[metric.name] = metric.onResource(response, pageMetrics[metric.name]);
       });
     });
 
+    var startTime = _.now();
+    var opened = false;
     page.open( url, function (status) {
+      if (opened) {
+        console.log('Concurrency error');
+        return;
+      }
+      opened = true;
+
+      // General stat collection
+      pageMetrics.url = url;
+      pageMetrics.loadTime = _.now() - startTime;
+      pageMetrics.status = status;
+
+      // In context metrics collection
       var executeTest = function(item, callback) {
         page.evaluate( item.onContext, function(result) {
           var payload = {};
@@ -121,11 +144,10 @@ var evaluatePage = function(ph, url, metrics, onComplete) {
           pageMetrics = _.extend(pageMetrics, result);
         });
 
+        console.log('Complete: ' + url);
         onComplete(null, pageMetrics);
       };
 
-      console.log('status: ', status);
-      var contextMetrics = _.filter(metrics, function(metric) { return metric.onContext; });
       async.mapSeries(contextMetrics, executeTest, done);
     });
   });
@@ -152,11 +174,9 @@ var pagesToTest = [
 ];
 
 phantom.create( function(ph) {
-  async.mapLimit(pagesToTest, 5, function(url, callback) {
-    evaluatePage(ph, url, defaultMetrics, function(err, result) {
-      result.url = url;
-      callback(null, result);
-    });
+  // Run one page at a time, phantom bridge is having serious concurrency issues
+  async.mapSeries(pagesToTest, function(url, callback) {
+    evaluatePage(ph, url, defaultMetrics, callback);
   }, function(err, results) {
     _.each(results, function(result) {
       console.log('======================================');
