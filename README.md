@@ -1,4 +1,4 @@
-Snuffle
+Snuffy
 -------
 
-Sniffing out the metrics.
+Sniffing out all the metrics.
