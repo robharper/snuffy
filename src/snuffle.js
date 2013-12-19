@@ -1,6 +1,7 @@
-var phantom = require('phantom');
 var async = require('async');
 var _ = require('lodash');
+var webpage = require('webpage');
+var system = require('system');
 
 var defaultMetrics = [
   {
@@ -99,57 +100,41 @@ var defaultMetrics = [
 ];
 
 
-var evaluatePage = function(ph, url, metrics, onComplete) {
+var evaluatePage = function(url, metrics, onComplete) {
   var resourceMetrics = _.filter(metrics, 'onResource');
   var contextMetrics = _.filter(metrics, 'onContext');
 
   console.log('Evaluating: ' + url);
 
-  ph.createPage( function(page) {
-    var pageMetrics = {};
+  var page = webpage.create();
 
-    // Network request response metrics collection
-    page.set('onResourceReceived', function (response) {
-      if (!response) return;
-      _.each(resourceMetrics, function(metric) {
-        pageMetrics[metric.name] = metric.onResource(response, pageMetrics[metric.name]);
-      });
+  var pageMetrics = {};
+
+  // Network request response metrics collection
+  page.onResourceReceived = function (response) {
+    if (!response) return;
+    _.each(resourceMetrics, function(metric) {
+      pageMetrics[metric.name] = metric.onResource(response, pageMetrics[metric.name]);
     });
+  };
 
-    var startTime = _.now();
-    var opened = false;
-    page.open( url, function (status) {
-      if (opened) {
-        console.log('Concurrency error');
-        return;
-      }
-      opened = true;
+  var startTime = _.now();
+  var opened = false;
+  page.open( url, function (status) {
+    // General stat collection
+    pageMetrics.url = url;
+    pageMetrics.loadTime = _.now() - startTime;
+    pageMetrics.status = status;
 
-      // General stat collection
-      pageMetrics.url = url;
-      pageMetrics.loadTime = _.now() - startTime;
-      pageMetrics.status = status;
-
+    if (status === 'success') {
       // In context metrics collection
-      var executeTest = function(item, callback) {
-        page.evaluate( item.onContext, function(result) {
-          var payload = {};
-          payload[item.name] = result;
-          callback(null, payload);
-        });
-      };
+      _.each(contextMetrics, function(metric) {
+        var result = page.evaluate( metric.onContext );
+        pageMetrics[metric.name] = result;
+      });
+    }
 
-      var done = function(err, results) {
-        _.each(results, function(result) {
-          pageMetrics = _.extend(pageMetrics, result);
-        });
-
-        console.log('Complete: ' + url);
-        onComplete(null, pageMetrics);
-      };
-
-      async.mapSeries(contextMetrics, executeTest, done);
-    });
+    onComplete(null, pageMetrics);
   });
 };
 
@@ -173,16 +158,9 @@ var pagesToTest = [
   'http://online.wsj.com'
 ];
 
-phantom.create( function(ph) {
-  // Run one page at a time, phantom bridge is having serious concurrency issues
-  async.mapSeries(pagesToTest, function(url, callback) {
-    evaluatePage(ph, url, defaultMetrics, callback);
-  }, function(err, results) {
-    _.each(results, function(result) {
-      console.log('======================================');
-      console.dir(result);
-    });
-
-    ph.exit();
-  });
+async.mapLimit(pagesToTest, 3, function(url, callback) {
+  evaluatePage(url, defaultMetrics, callback);
+}, function(err, results) {
+  system.stdout.write( JSON.stringify(results, null, 2) );
+  phantom.exit();
 });
