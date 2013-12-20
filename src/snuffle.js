@@ -84,8 +84,19 @@ var defaultMetrics = [
     name: 'scriptCount',
     onResource: function(response, memo) {
       memo = memo || 0;
-      if (response.stage === 'end' && response.contentType && response.contentType.indexOf('/javascript') > 0) {
+      if (response.stage === 'end' && response.contentType && response.contentType.indexOf('javascript') > 0) {
         memo += 1;
+      }
+      return memo;
+    }
+  },
+  {
+    // Note: due to phantomjs bug, this value is misreported
+    name: 'totalResourceSize',
+    onResource: function(response, memo) {
+      memo = memo || 0; 
+      if (response.stage == 'start' && response.bodySize) {
+        memo += response.bodySize;
       }
       return memo;
     }
@@ -100,7 +111,7 @@ var defaultMetrics = [
 ];
 
 
-var evaluatePage = function(url, metrics, onComplete) {
+var evaluatePage = function(url, metrics, wait, onComplete) {
   var resourceMetrics = _.filter(metrics, 'onResource');
   var contextMetrics = _.filter(metrics, 'onContext');
 
@@ -126,15 +137,17 @@ var evaluatePage = function(url, metrics, onComplete) {
     pageMetrics.loadTime = _.now() - startTime;
     pageMetrics.status = status;
 
-    if (status === 'success') {
-      // In context metrics collection
-      _.each(contextMetrics, function(metric) {
-        var result = page.evaluate( metric.onContext );
-        pageMetrics[metric.name] = result;
-      });
-    }
+    setTimeout(function() {
+      if (status === 'success') {
+        // In context metrics collection
+        _.each(contextMetrics, function(metric) {
+          var result = page.evaluate( metric.onContext );
+          pageMetrics[metric.name] = result;
+        });
+      }
 
-    onComplete(null, pageMetrics);
+      onComplete(null, pageMetrics);
+    }, wait);
   });
 };
 
@@ -159,7 +172,7 @@ var pagesToTest = [
 ];
 
 async.mapLimit(pagesToTest, 3, function(url, callback) {
-  evaluatePage(url, defaultMetrics, callback);
+  evaluatePage(url, defaultMetrics, 2000, callback);
 }, function(err, results) {
   system.stdout.write( JSON.stringify(results, null, 2) );
   phantom.exit();
