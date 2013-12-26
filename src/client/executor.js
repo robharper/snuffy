@@ -3,8 +3,8 @@ var fs = require('fs');
 var _ = require('lodash');
 var metrics = require('../metrics');
 
-var server = process.argv[2] || 'http://localhost:4567';
-var outputFile = process.argv[3] || 'test.csv';
+var server = process.argv[2] || 'http://evening-peak-4081.herokuapp.com/'; //'http://localhost:4567';
+var outputFile = process.argv[3] || 'results.csv'; // 'test.csv';
 
 var kue = require('kue');
 var jobs = kue.createQueue();
@@ -21,21 +21,24 @@ fs.open(outputFile, 'a', function(err, fd){
       console.log('Starting: ' + job.data.url);
 
       rest.get(server, {query: {url: job.data.url}})
-        .on('complete', function(result) {
-          if (result instanceof Error) {
-            // Snuffle request failed
-            done(result);
-          } else {
-            // Map results object to value array
-            var line = _.map(columns, function(col) {
-              return JSON.stringify(result[col]);
-            }).join(',');
+        .on('fail', function(data, response) {
+          console.error('Fail ' + job.data.url + ' - ('+response.statusCode+')', data );
+          done(data);
+        })
+        .on('error', function(err, response) {
+          console.error('Error ' + job.data.url + ' - ('+response.statusCode+')', err );
+          done(err);
+        })
+        .on('success', function(result) {
+          // Map results object to value array
+          var line = _.map(columns, function(col) {
+            return JSON.stringify(result[col]);
+          }).join(',');
 
-            fs.write(fd, line + '\n', null, undefined, function(err, written) {
-              console.log('Wrote: ' + job.data.url);
-              done(err);
-            });
-          }
+          fs.write(fd, line + '\n', null, undefined, function(err, written) {
+            console.log('Wrote: ' + job.data.url);
+            done(err);
+          });
         });
     });
   });

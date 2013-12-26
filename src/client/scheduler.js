@@ -3,7 +3,7 @@ var jobs = kue.createQueue();
 
 var csv = require('csv');
 
-var max = parseInt(process.argv[3], 10) || 2;
+var max = parseInt(process.argv[3], 10) || 500;
 
   // XXX TEST
   // var sites = [

@@ -11,7 +11,7 @@ phantom.create( function(ph) {
   app.get("/", function(req, res) {
     var url = req.query.url;
     evaluatePage(ph, url, metrics, 2000, function(err, result) {
-      if (result) {
+      if (!err) {
         res.send(result);
         res.end();
       } else {
