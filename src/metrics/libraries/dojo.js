@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'Ember.js',
+  name: 'dojo',
   onContext: function() {
     return window.dojo && window.dojo.version && dojo.version.toString();
   }

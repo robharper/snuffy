@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'Ember.js',
+  name: 'ember.js',
   onContext: function() {
     return window.Ember && window.Ember.VERSION;
   }

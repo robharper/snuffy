@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'FastClick',
+  name: 'fastclick',
   onContext: function() {
     return !!window.FastClick;
   }

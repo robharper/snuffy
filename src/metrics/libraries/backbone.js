@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'Backbone.js',
+  name: 'backbone.js',
   onContext: function() {
     return window.Backbone && window.Backbone.VERSION;
   }

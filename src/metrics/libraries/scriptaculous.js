@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'Ember.js',
+  name: 'scriptaculous',
   onContext: function() {
     return window.Scriptaculous && window.Scriptaculous.Version;
   }

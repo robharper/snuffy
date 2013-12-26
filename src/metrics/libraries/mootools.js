@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'Ember.js',
+  name: 'mootools',
   onContext: function() {
     return window.MooTools && MooTools.version;
   }
