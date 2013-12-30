@@ -22,8 +22,11 @@ fs.open(outputFile, 'a', function(err, fd){
 
       rest.get(server, {query: {url: job.data.url}})
         .on('fail', function(data, response) {
-          console.error('Fail ' + job.data.url + ' - ('+response.statusCode+')', data );
-          done(data);
+          console.error('Fail ' + job.data.url + ' - ('+response.statusCode+')');
+          // Allow remote to recover before continuing
+          setTimeout(function() {
+            done(data);
+          }, 5000);
         })
         .on('error', function(err, response) {
           console.error('Error ' + job.data.url + ' - ('+response.statusCode+')', err );
@@ -37,7 +40,10 @@ fs.open(outputFile, 'a', function(err, fd){
 
           fs.write(fd, line + '\n', null, undefined, function(err, written) {
             console.log('Wrote: ' + job.data.url);
-            done(err);
+            // Rate limit, delay job completion.
+            setTimeout(function() {
+              done(err);
+            }, 3000);
           });
         });
     });
