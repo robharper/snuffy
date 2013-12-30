@@ -1,1 +1,1 @@
-web: node src/server/app.js
+web: node_modules/forever/bin/forever src/server/app.js
