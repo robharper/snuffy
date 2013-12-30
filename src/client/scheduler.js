@@ -3,7 +3,7 @@ var jobs = kue.createQueue();
 
 var csv = require('csv');
 
-var max = parseInt(process.argv[3], 10) || 500;
+var max = parseInt(process.argv[3], 10) || 100;
 
   // XXX TEST
   // var sites = [
@@ -32,7 +32,7 @@ csv()
       jobs.create('snuffle', {
         title: sites[idx][1],
         url: 'http://'+sites[idx][1]
-      }).save();
+      }).attempts(3).save();
       idx += 1;
     }
 
