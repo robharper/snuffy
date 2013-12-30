@@ -7,6 +7,7 @@ module.exports = [
   require('./ext'),
   require('./fastclick'),
   require('./hammer'),
+  require('./jquery-ui'),
   require('./jquery'),
   require('./knockout'),
   require('./lodash'),

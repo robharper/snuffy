@@ -1,5 +1,5 @@
 module.exports = []
-  .concat( require('./analytics') )
+  .concat( require('./resources') )
   .concat( require('./libraries') )
-  .concat( require('./ads') )
-  .concat( require('./resources') );
+  .concat( require('./analytics') )
+  .concat( require('./ads') );
