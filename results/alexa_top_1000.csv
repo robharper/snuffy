@@ -1,5 +1,6 @@
 url,imageCount,scriptCount,totalResourceSize,angular.js,backbone.js,d3.js,dojo,ember.js,ext.js,fastclick,hammer.js,jquery ui,jquery,knockout.js,lodash,modernizr,moment.js,mootools,prototype.js,require.js,scriptaculous,socket.io,transit,underscore,yui,zepto.js,chartbeat,comscore,crazyegg,googleAnalytics,hubspot,kissmetrics,marketo,mixpanel,optimizely,pingdom,quantcast,tapstream,vero,woopra,adroll,doubleclick
 http://google.com,4,2,198881,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+http://facebook.com,0,1,210025,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 http://youtube.com,28,8,1575990,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,true
 http://yahoo.com,39,10,1330384,,,,,,,,,,,,,,,,,,,,,,3.8.1,,,true,,,,,,,,,,,,,,true
 http://baidu.com,7,6,213499,,,,,,,,,,1.10.2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
