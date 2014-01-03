@@ -1,40 +1,38 @@
+var async = require('async');
+var csv = require('csv');
+
 var kue = require('kue');
 var jobs = kue.createQueue();
 
-var csv = require('csv');
+var program = require('commander');
 
-var max = parseInt(process.argv[3], 10) || 100;
+program
+  .description('Enqueues snuffle tasks to the queue from a csv file containing ranks and urls')
+  .usage('[options] <file>')
+  .option('-s, --start [offset]', 'Row of input csv from which to begin adding jobs [0]', parseInt)
+  .option('-c, --count [number]', 'Number of rows to add [100]', parseInt)
+  .option('-r, --retries [number]', 'Number of times to retry failed jobs [3]', parseInt)
+  .parse(process.argv);
 
-  // XXX TEST
-  // var sites = [
-  //   [0,'http://news.yahoo.com'],
-  //   [0,'http://www.cnn.com'],
-  //   [0,'http://www.huffingtonpost.com'],
-  //   [0,'http://reddit.com'],
-  //   [0,'http://bbc.co.uk/news/'],
-  //   [0,'http://nytimes.com'],
-  //   [0,'http://news.google.com'],
-  //   [0,'http://weather.com'],
-  //   [0,'http://theguardian.com'],
-  //   [0,'http://foxnews.com'],
-  //   [0,'http://forbes.com'],
-  //   [0,'http://timesofindia.indiatimes.com'],
-  //   [0,'http://shutterstock.com'],
-  //   [0,'http://online.wsj.com']
-  // ];
-  // XXX TEST
+if (!program.args[0]) {
+  console.log('  An input file must be specified');
+  program.help();
+}
 
 csv()
-  .from.path( process.argv[2] )
+  .from.path( program.args[0] )
   .to.array( function(sites) {
-    var idx = 0;
-    while (idx < max && idx < sites.length) {
+    var slice = sites.slice(program.start, program.start+program.count);
+    async.each(slice, function(row, callback) {
+      // Schedule kue job
       jobs.create('snuffle', {
-        title: sites[idx][1],
-        url: 'http://'+sites[idx][1]
-      }).attempts(3).save();
-      idx += 1;
-    }
-
-    console.log('All scheduled...');
+        title: row[1],
+        rank: row[0],
+        url: 'http://'+row[1]
+      }).attempts(program.retries).save(callback);
+    }, function(err) {
+      // All done, can exit
+      console.log('All scheduled...');
+      process.exit();
+    });
   });
