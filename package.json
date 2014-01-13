@@ -12,10 +12,11 @@
   "dependencies": {
     "async": "~0.2.9",
     "lodash": "~2.4.0",
-    "phantom": "~0.5.4",
     "express": "~3.4.7",
     "forever": "~0.10.11",
-    "commander": "~2.1.0"
+    "commander": "~2.1.0",
+    "node-phantom": "~0.2.5",
+    "phantomjs": "~1.9.2-6"
   },
   "devDependencies": {
     "kue": "~0.6.2",

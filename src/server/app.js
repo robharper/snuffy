@@ -1,29 +1,23 @@
 var express = require("express"),
     app     = express(),
     port    = parseInt(process.env.PORT, 10) || 4567;
-  
+
 var phantom = require('phantom');
 var evaluatePage = require('./evaluator');
 var metrics = require('../metrics');
 
-phantom.create( function(ph) {
-
-  app.get("/", function(req, res) {
-    var url = req.query.url;
-    evaluatePage(ph, url, metrics, 2000, function(err, result) {
-      if (result) {
-        res.send(result);
-        res.end();
-      } else {
-        res.writeHead(500, {'Content-Type': 'text/plain'});
-        res.end(err);
-      }
-    });
-  });
-
-  process.on('SIGINT', function(){
-    console.log('closing phantom...');
-    ph.exit();
+app.get("/", function(req, res) {
+  var url = req.query.url;
+  evaluatePage(url, metrics, 2000, function(err, result) {
+    if (result) {
+      res.jsonp(result);
+      res.end();
+    } else {
+      // evaluate page only fails if phantom fails to load the target page
+      // respond with 404, somewhat semantically relevant
+      res.writeHead(404, {'Content-Type': 'text/plain'});
+      res.end(err);
+    }
   });
 });
 
