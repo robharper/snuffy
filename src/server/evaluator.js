@@ -68,5 +68,5 @@ module.exports = function(url, metrics, wait, onComplete) {
   };
 
   console.log('Evaluating: ' + url);
-  phantom.create(execute, {phantomPath:require('phantomjs').path});
+  phantom.create(execute);
 };
