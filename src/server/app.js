@@ -2,7 +2,6 @@ var express = require("express"),
     app     = express(),
     port    = parseInt(process.env.PORT, 10) || 4567;
 
-var phantom = require('phantom');
 var evaluatePage = require('./evaluator');
 var metrics = require('../metrics');
 

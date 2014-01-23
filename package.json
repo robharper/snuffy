@@ -15,8 +15,7 @@
     "express": "~3.4.7",
     "forever": "~0.10.11",
     "commander": "~2.1.0",
-    "node-phantom": "~0.2.5",
-    "phantomjs": "~1.9.2-6"
+    "node-phantom": "~0.2.5"
   },
   "devDependencies": {
     "kue": "~0.6.2",
