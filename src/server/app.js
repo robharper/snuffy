@@ -12,9 +12,8 @@ app.get("/", function(req, res) {
       res.jsonp(result);
       res.end();
     } else {
-      // evaluate page only fails if phantom fails to load the target page
-      // respond with 404, somewhat semantically relevant
-      res.writeHead(404, {'Content-Type': 'text/plain'});
+      // evaluate page fails if phantom fails to load the target page or if phantom crashes
+      res.writeHead( err === 'phantom crash' ? 500 : 404, {'Content-Type': 'text/plain'});
       res.end(err);
     }
   });
@@ -32,4 +31,6 @@ app.configure(function(){
   app.use(app.router);
 });
 
-app.listen(port);
+app.listen(port, function() {
+  console.log('Server running on port ' + port);
+});
