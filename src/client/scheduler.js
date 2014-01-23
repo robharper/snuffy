@@ -23,6 +23,7 @@ csv()
   .from.path( program.args[0] )
   .to.array( function(sites) {
     var slice = sites.slice(program.start, program.start+program.count);
+    console.log('Adding: ' + slice.length + ' of ' + sites.length);
     async.each(slice, function(row, callback) {
       // Schedule kue job
       jobs.create('snuffle', {

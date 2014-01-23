@@ -35,7 +35,7 @@ jobs.process('snuffle', function(job, done){
 
   console.log('Starting: ' + job.data.url);
 
-  rest.get(program.server, {query: {url: job.data.url}})
+  rest.get(program.server || 'http://evening-peak-4081.herokuapp.com/', {query: {url: job.data.url}})
     .on('fail', function(data, response) {
       console.error('Fail ' + job.data.url + ' - ('+response.statusCode+')');
       // Allow remote to recover before continuing
@@ -58,6 +58,8 @@ jobs.process('snuffle', function(job, done){
           result[key] = '';
         }
       });
+
+      result.rank = job.data.rank;
 
       output.write(result);
 
