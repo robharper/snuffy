@@ -98,7 +98,7 @@ module.exports = function(url, metrics, wait, onComplete) {
 
       // Execute with new phantom
       executeScrape(sharedPhantom, url, metrics, wait, wrappedCallback);
-    }, {phantomPath:require('phantomjs').path});
+    });
   } else {
     // Reuse existing phantom
    executeScrape(sharedPhantom, url, metrics, wait, wrappedCallback);
