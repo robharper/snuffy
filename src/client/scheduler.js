@@ -1,5 +1,6 @@
 var async = require('async');
 var csv = require('csv');
+var _ = require('lodash');
 
 var kue = require('kue');
 var jobs = kue.createQueue();
@@ -18,6 +19,12 @@ if (!program.args[0]) {
   console.log('  An input file must be specified');
   program.help();
 }
+
+_.defaults(program, {
+  start: 0,
+  count: 10,
+  retries: 3
+});
 
 csv()
   .from.path( program.args[0] )
