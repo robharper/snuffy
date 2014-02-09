@@ -31,7 +31,7 @@ This is a little pet project of mine. Hacky and unstable, but fun. It scans site
  - chartbeat
  - comscore
  - crazyegg
- - ga
+ - google analytics
  - hubspot
  - kissmetrics
  - marketo
@@ -44,6 +44,14 @@ This is a little pet project of mine. Hacky and unstable, but fun. It scans site
  - woopra
  - adroll
  - doubleclick
+
+## Results
+Results for the top 1,000 (CSV) and top 10,000 (CSV & JSON) can be found [here](/results). A few caveats:
+
+ 1. Missing results - a fair number of results are missing (e.g. the top 10,000 only has ~8,800 results). This is due to a few reasons: first, some sites are no longer operational or at least didn't respond during my test run; second, PhantomJS would reliably crash loading some sites; third, because I was running several scrapes concurrently a crash on one site would bring down the entire phantom instance and fail to return results from the other active scrapes. I used a retry count of 3 but often the bad site would be retried with the same poor concurrent victims causing them never to return a value. There is obviously room for improvement here.
+ 2. Missing script/image counts for the 10,000 - The top 1,000 has results for number of scripts and images loaded. When running the top 10,000 I had introduced a bug that caused these metrics not to be recorded. Oh well. Another time.
+ 3. Accuracy - I test for the existence of libraries by checking the `window` global. Sites that employ code modularization and compartmentalization (say using RequireJS) may not expose libraries globally and as such won't be detected.
+ 4. Representativeness - A number of the tested sites require login to actually access the meat and potatoes. As such, results for sites like `facebook.com` will be uninteresting because they won't tell us what the actual facebook "app" is using, just the login/home page.
 
 ## Installation and Usage
 Two parts, client and server. 
